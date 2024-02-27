@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Author;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +15,31 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+
+	$books = Author::whereHas('books', function ($query) {
+    $query->where('type', 'drama');
+		})->withAvg('books as page_count_avg', 'page_count')->toSql();
+dump('its wrong:', $books);
+    
+		echo ' its has to be like this: ';
+		 
+		dump("SELECT `author`.*,
+		(
+			SELECT avg(`books`.`page_count`)
+			FROM `books`
+			WHERE `author`.`id` = `books`.`author_id`
+				and `TYPE` = 'drama'
+		) AS `page_count_avg`
+	FROM `author`
+	WHERE EXISTS (
+			SELECT *
+			FROM `books`
+			WHERE `author`.`id` = `books`.`author_id`
+				and `TYPE` = 'drama'
+		)");
+
+
+
+
+
 });
